@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MagicSmoke</RootNamespace>
     <AssemblyName>MagicSmoke</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -31,26 +31,30 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\EntertheGungeonVanilla - Copy\EtG_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp-reference">
+      <HintPath>..\..\..\EntertheGungeonVanilla - Copy\EtG_Data\Assembly-CSharp-reference.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp.Base.mm">
+      <HintPath>..\..\..\EntertheGungeonVanilla - Copy\EtG_Data\Managed\Assembly-CSharp.Base.mm.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\ETGMod-master\Assembly-CSharp.Base.mm\bin\Debug\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine.Base.mm">
+      <HintPath>..\..\..\EntertheGungeonVanilla - Copy\EtG_Data\Managed\UnityEngine.Base.mm.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\EntertheGungeonVanilla - Copy\EtG_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\..\EntertheGungeonVanilla - Copy\EtG_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DualWieldForcer.cs" />
     <Compile Include="MagicSmoke.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SpeedBehavior.cs" />
+    <Compile Include="StatsBehavior.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
