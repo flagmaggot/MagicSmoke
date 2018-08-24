@@ -1,6 +1,8 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
+using System.IO;
 
 namespace MagicSmoke
 {
@@ -87,6 +89,8 @@ namespace MagicSmoke
 
         public override void Init()
         {
+            System.IO.Directory.CreateDirectory("MagicSmokeSaves");
+
             _AutocompletionSettings = new AutocompletionSettings((input) => {
                 List<string> ret = new List<string>();
                 foreach (var stat in _Stats)
@@ -215,6 +219,17 @@ namespace MagicSmoke
                 Chest.Spawn(synergy_Chest, basePosition);
             });
 
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("savesettings", (string[] args) =>
+            {
+                SaveSettings(args[0]);
+                ETGModConsole.Log("Settings file saved as: " + args[0] + ".json");
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("loadsettings", (string[] args) =>
+            {
+                LoadSettings(args[0]);
+            });
+
             _MsGroup = ETGModConsole.Commands.GetGroup("ms");
             _SetGroup = _MsGroup.AddUnit("set", _StatSet, _AutocompletionSettings);
             _SetGroup = _MsGroup.AddUnit("get", _StatGet, _AutocompletionSettings);
@@ -225,6 +240,38 @@ namespace MagicSmoke
             _SetGroup = _MsGroup.AddUnit("setmagnificence", _MagnificenceSet, _AutocompletionSettings);
         }
 
+
+
+        private void SaveSettings(string filename)
+        {
+            JObject jobject = new JObject();
+
+            foreach (var stat in _Stats)
+            {
+                jobject[stat.Key] = GameManager.Instance.PrimaryPlayer.stats.GetStatValue(stat.Value);
+            }
+            JObject jobject2 = jobject;
+            File.WriteAllText("MagicSmokeSaves/"+filename+".json", jobject2.ToString());
+        }
+
+        private void LoadSettings(string filename)
+        {
+            JObject jobject = JObject.Parse(File.ReadAllText("MagicSmokeSaves/" + filename + ".json"));
+
+            //float floatvalue;
+            foreach(var j in jobject)
+            {
+                if (_Stats.ContainsKey(j.Key))
+                {
+                    _Stats.TryGetValue(j.Key, out PlayerStats.StatType specificstat);
+                    float.TryParse(j.Value.ToString(), out float value);
+                    GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, value, GameManager.Instance.PrimaryPlayer);
+                    ETGModConsole.Log(j.Key + " loaded to: <color=#ff0000ff>" + value + "</color>");
+                }
+                
+            }
+        }
+
         public override void Start()
         {
             throw new NotImplementedException();
@@ -232,7 +279,7 @@ namespace MagicSmoke
 
         public override void Exit()
         {
-            throw new NotImplementedException();
+            //SaveSettings();
         }
     }
 }
