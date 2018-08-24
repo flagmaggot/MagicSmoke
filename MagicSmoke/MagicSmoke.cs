@@ -66,6 +66,8 @@ namespace MagicSmoke
         private static Action<string[]> _StatGet;
         private static Action<string[]> _StatGetAll;
         private static Action<string[]> _GlitchSpawn;
+        private static Action<string[]> _MagnificenceSet;
+        private static Action<string[]> _MagnificenceGet;
 
         public void SetStat(PlayerController player, PlayerStats.StatType type, float val)
         {
@@ -147,7 +149,7 @@ namespace MagicSmoke
                 ETGModConsole.Log("Use \"ms help\" for help!", false);
 
             });
-            
+
             ETGModConsole.Commands.GetGroup("ms").AddUnit("help", (string[] args) =>
             {
                 ETGModConsole.Log("<size=100><color=#ff0000ff>MagicSmoke v1 by flagmaggot</color></size>", false);
@@ -178,6 +180,22 @@ namespace MagicSmoke
                 }
             });
 
+            _MagnificenceSet = (args) => {
+                float value;
+                if (float.TryParse(args[0], out value))
+                {
+                    GameManager.Instance.PrimaryPlayer.stats.AddFloorMagnificence(value);
+                    ETGModConsole.Log("Magnificence set to: <color=#ff0000ff>" + value + "</color>");
+                }
+                else
+                    ETGModConsole.Log($"Please check your command and try again");
+            };
+
+
+            _MagnificenceGet = (args) => {
+                ETGModConsole.Log("Magnificence set to: <color=#ff0000ff>" + GameManager.Instance.PrimaryPlayer.stats.Magnificence + "</color>");
+            };
+
             _StatSet = (args) => {
 
                 float value;
@@ -196,12 +214,15 @@ namespace MagicSmoke
                 IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
                 Chest.Spawn(synergy_Chest, basePosition);
             });
-             
+
             _MsGroup = ETGModConsole.Commands.GetGroup("ms");
             _SetGroup = _MsGroup.AddUnit("set", _StatSet, _AutocompletionSettings);
             _SetGroup = _MsGroup.AddUnit("get", _StatGet, _AutocompletionSettings);
             _SynergyChestGroup = _MsGroup.AddUnit("spawnglitched", _GlitchSpawn, _AutocompletionChests);
             _GetGroup = _MsGroup.AddUnit("getallstats", _StatGetAll, _AutocompletionSettings);
+
+            _SetGroup = _MsGroup.AddUnit("getmagnificence", _MagnificenceGet, _AutocompletionSettings);
+            _SetGroup = _MsGroup.AddUnit("setmagnificence", _MagnificenceSet, _AutocompletionSettings);
         }
 
         public override void Start()
