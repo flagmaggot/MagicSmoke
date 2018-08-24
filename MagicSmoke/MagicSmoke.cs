@@ -199,11 +199,11 @@ namespace MagicSmoke
                 IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
                 Chest.Spawn(synergy_Chest, basePosition);
             });
-
+             
             _MsGroup = ETGModConsole.Commands.GetGroup("ms");
             _SetGroup = _MsGroup.AddUnit("set", _StatSet, _AutocompletionSettings);
             _SetGroup = _MsGroup.AddUnit("get", _StatGet, _AutocompletionSettings);
-            _SynergyChestGroup = _MsGroup.AddUnit("spawnglitch", _GlitchSpawn, _AutocompletionChests);
+            _SynergyChestGroup = _MsGroup.AddUnit("spawnglitched", _GlitchSpawn, _AutocompletionChests);
             _GetGroup = _MsGroup.AddUnit("getallstats", _StatGetAll, _AutocompletionSettings);
         }
 
