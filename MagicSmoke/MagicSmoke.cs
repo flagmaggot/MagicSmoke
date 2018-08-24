@@ -251,7 +251,7 @@ namespace MagicSmoke
                 jobject[stat.Key] = GameManager.Instance.PrimaryPlayer.stats.GetStatValue(stat.Value);
             }
             JObject jobject2 = jobject;
-            File.WriteAllText("MagicSmokeSaves/"+filename+".json", jobject2.ToString());
+            File.WriteAllText("MagicSmokeSaves/" + filename + ".json", jobject2.ToString());
         }
 
         private void LoadSettings(string filename)
@@ -259,7 +259,7 @@ namespace MagicSmoke
             JObject jobject = JObject.Parse(File.ReadAllText("MagicSmokeSaves/" + filename + ".json"));
 
             //float floatvalue;
-            foreach(var j in jobject)
+            foreach (var j in jobject)
             {
                 if (_Stats.ContainsKey(j.Key))
                 {
@@ -268,7 +268,7 @@ namespace MagicSmoke
                     GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, value, GameManager.Instance.PrimaryPlayer);
                     ETGModConsole.Log(j.Key + " loaded to: <color=#ff0000ff>" + value + "</color>");
                 }
-                
+
             }
         }
 
