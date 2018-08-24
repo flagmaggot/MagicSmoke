@@ -148,7 +148,6 @@ namespace MagicSmoke
 
             });
             
-
             ETGModConsole.Commands.GetGroup("ms").AddUnit("help", (string[] args) =>
             {
                 ETGModConsole.Log("<size=100><color=#ff0000ff>MagicSmoke v1 by flagmaggot</color></size>", false);
@@ -178,8 +177,6 @@ namespace MagicSmoke
                     forcer.TargetPlayer = player;
                 }
             });
-
-
 
             _StatSet = (args) => {
 
