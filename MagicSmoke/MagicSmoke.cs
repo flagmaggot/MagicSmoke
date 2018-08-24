@@ -2,7 +2,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
+using Newtonsoft;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace MagicSmoke
 {
@@ -244,32 +246,76 @@ namespace MagicSmoke
 
         private void SaveSettings(string filename)
         {
-            JObject jobject = new JObject();
-
+            JObject statsObject = new JObject();
+            
             foreach (var stat in _Stats)
             {
-                jobject[stat.Key] = GameManager.Instance.PrimaryPlayer.stats.GetStatValue(stat.Value);
+                statsObject[stat.Key] = GameManager.Instance.PrimaryPlayer.stats.GetStatValue(stat.Value);
             }
-            JObject jobject2 = jobject;
-            File.WriteAllText("MagicSmokeSaves/" + filename + ".json", jobject2.ToString());
+
+            //JObject jobject2 = statsObject;
+            //File.WriteAllText("MagicSmokeSaves/" + filename + ".json", jobject2.ToString());
+
+            JObject gunObject = new JObject();
+            foreach (Gun i in GameManager.Instance.PrimaryPlayer.inventory.AllGuns)
+            {
+                gunObject[i.name] = i.name;
+            }
+
+            var json = JsonConvert.SerializeObject(new { gunObject, statsObject },Newtonsoft.Json.Formatting.Indented)
+                ;
+            File.WriteAllText("MagicSmokeSaves/" + filename + ".json", json);
         }
 
         private void LoadSettings(string filename)
         {
-            JObject jobject = JObject.Parse(File.ReadAllText("MagicSmokeSaves/" + filename + ".json"));
-
-            //float floatvalue;
-            foreach (var j in jobject)
-            {
-                if (_Stats.ContainsKey(j.Key))
+            if (System.IO.File.Exists("MagicSmokeSaves/" + filename + ".json"))
+            { 
+                JObject jobject = JObject.Parse(File.ReadAllText("MagicSmokeSaves/" + filename + ".json"));
+                
+                foreach(var result in jobject["gunObject"])
                 {
-                    _Stats.TryGetValue(j.Key, out PlayerStats.StatType specificstat);
-                    float.TryParse(j.Value.ToString(), out float value);
-                    GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, value, GameManager.Instance.PrimaryPlayer);
-                    ETGModConsole.Log(j.Key + " loaded to: <color=#ff0000ff>" + value + "</color>");
+                    ETGModConsole.Log(result.ToString());
                 }
 
+                foreach (var result in jobject["statObject"])
+                {
+                    //if (_Stats.ContainsKey(result))
+                    {
+                        //_Stats.TryGetValue(result, out PlayerStats.StatType specificstat);
+                        //float.TryParse(j.Value.ToString(), out float value);
+                        //GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, value, GameManager.Instance.PrimaryPlayer);
+                        //ETGModConsole.Log(result + " loaded to: <color=#ff0000ff>" + value + "</color>");
+                        ETGModConsole.Log(result.ToString());
+                    }
+
+
+                }
+
+                //ETGModConsole.Log(statsArray[0]);
+
+
+
+                //foreach (var j in jobject)
+                //{
+                //    ETGModConsole.Log(j.Value.ToString());
+                //}
+
+
+
+                //foreach (var j in jobject)
+                //{
+                //    if (_Stats.ContainsKey(j.Key))
+                //    {
+                //        _Stats.TryGetValue(j.Key, out PlayerStats.StatType specificstat);
+                //        float.TryParse(j.Value.ToString(), out float value);
+                //        GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, value, GameManager.Instance.PrimaryPlayer);
+                //        ETGModConsole.Log(j.Key + " loaded to: <color=#ff0000ff>" + value + "</color>");
+                //    }
+                //}
             }
+            else
+                ETGModConsole.Log("File <color=#ff0000ff>" + filename + ".json </color>in the MagicSmokeSaves directory not found!");
         }
 
         public override void Start()
