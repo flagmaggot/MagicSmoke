@@ -351,8 +351,10 @@ namespace MagicSmoke
                 foreach (JProperty active in deserialized["activeObject"])
                 {
                     int id = 0;
+                    GameManager.Instance.PrimaryPlayer.RemoveAllActiveItems();
                     if (Int32.TryParse(active.Value.ToString(), out id))
                     {
+                        
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
                     }
                     else
@@ -364,6 +366,7 @@ namespace MagicSmoke
                 foreach (JProperty passive in deserialized["passiveObject"])
                 {
                     int id = 0;
+                    GameManager.Instance.PrimaryPlayer.RemoveAllPassiveItems();
                     if (Int32.TryParse(passive.Value.ToString(), out id))
                     {
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
