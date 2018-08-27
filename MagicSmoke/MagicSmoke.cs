@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft;
 using System.IO;
 using Newtonsoft.Json;
+using Gungeon;
 
 namespace MagicSmoke
 {
@@ -167,6 +168,7 @@ namespace MagicSmoke
                 ETGModConsole.Log("ms get <stat name> - gets the state value", false);
                 ETGModConsole.Log("ms set <stat name> [arg] - sets the player speed (decimal values)", false);
                 ETGModConsole.Log("ms getallstats - returns all the stats and their values", false);
+                ETGModConsole.Log("ms spawnrainbowsynergy - spawns rainbow synergy chest", false);
             });
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("forcedualwield", (string[] args) =>
@@ -217,6 +219,19 @@ namespace MagicSmoke
             ETGModConsole.Commands.GetGroup("ms").AddUnit("spawnsynergy", (string[] args) =>
             {
                 Chest synergy_Chest = GameManager.Instance.RewardManager.Synergy_Chest;
+                if(args.Length != 0)
+                {
+
+                     synergy_Chest.IsRainbowChest = true;
+                }
+                IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
+                Chest.Spawn(synergy_Chest, basePosition);
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("spawnrainbowsynergy", (string[] args) =>
+            {
+                Chest synergy_Chest = GameManager.Instance.RewardManager.Synergy_Chest;
+                synergy_Chest.IsRainbowChest = true;
                 IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
                 Chest.Spawn(synergy_Chest, basePosition);
             });
@@ -246,73 +261,118 @@ namespace MagicSmoke
 
         private void SaveSettings(string filename)
         {
+            //JObject characterObject = new JObject();
+            //if (Enum.IsDefined(typeof(PlayableCharacters), GameManager.Instance.PrimaryPlayer.characterIdentity))
+            //    characterObject["character"] = GameManager.Instance.PrimaryPlayer.characterIdentity.ToString();
+
             JObject statsObject = new JObject();
-            
             foreach (var stat in _Stats)
             {
                 statsObject[stat.Key] = GameManager.Instance.PrimaryPlayer.stats.GetStatValue(stat.Value);
             }
 
-            //JObject jobject2 = statsObject;
-            //File.WriteAllText("MagicSmokeSaves/" + filename + ".json", jobject2.ToString());
-
             JObject gunObject = new JObject();
             foreach (Gun i in GameManager.Instance.PrimaryPlayer.inventory.AllGuns)
             {
-                gunObject[i.name] = i.name;
+                gunObject[i.name] = i.PickupObjectId;
             }
 
-            var json = JsonConvert.SerializeObject(new { gunObject, statsObject },Newtonsoft.Json.Formatting.Indented)
-                ;
-            File.WriteAllText("MagicSmokeSaves/" + filename + ".json", json);
+            JObject passiveObject = new JObject();
+            foreach (PassiveItem i in GameManager.Instance.PrimaryPlayer.passiveItems)
+            {
+                passiveObject[i.name] = i.PickupObjectId;
+            }
+
+            JObject activeObject = new JObject();
+            foreach (PlayerItem i in GameManager.Instance.PrimaryPlayer.activeItems)
+            {
+                activeObject[i.name] = i.PickupObjectId;
+            }
+
+            var json = JsonConvert.SerializeObject(new { gunObject, statsObject, activeObject, passiveObject },Newtonsoft.Json.Formatting.Indented);
+            //var json = JsonConvert.SerializeObject(new { characterObject, gunObject, statsObject, activeObject, passiveObject }, Newtonsoft.Json.Formatting.Indented);
+            File.WriteAllText("MagicSmokeSaves/" + filename + ".json", Base64Encode(json));
+        }
+
+        public static string Base64Encode(string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
+        public static string Base64Decode(string base64EncodedData)
+        {
+            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
         }
 
         private void LoadSettings(string filename)
         {
             if (System.IO.File.Exists("MagicSmokeSaves/" + filename + ".json"))
-            { 
-                JObject jobject = JObject.Parse(File.ReadAllText("MagicSmokeSaves/" + filename + ".json"));
+            {
+                var jsonFile = Base64Decode(File.ReadAllText("MagicSmokeSaves/" + filename + ".json"));
                 
-                foreach(var result in jobject["gunObject"])
-                {
-                    ETGModConsole.Log(result.ToString());
-                }
-
-                foreach (var result in jobject["statObject"])
-                {
-                    //if (_Stats.ContainsKey(result))
-                    {
-                        //_Stats.TryGetValue(result, out PlayerStats.StatType specificstat);
-                        //float.TryParse(j.Value.ToString(), out float value);
-                        //GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, value, GameManager.Instance.PrimaryPlayer);
-                        //ETGModConsole.Log(result + " loaded to: <color=#ff0000ff>" + value + "</color>");
-                        ETGModConsole.Log(result.ToString());
-                    }
-
-
-                }
-
-                //ETGModConsole.Log(statsArray[0]);
-
-
-
-                //foreach (var j in jobject)
+                var deserialized = JsonConvert.DeserializeObject<JObject>(jsonFile);
+                //foreach (JProperty character in deserialized["characterObject"])
                 //{
-                //    ETGModConsole.Log(j.Value.ToString());
-                //}
-
-
-
-                //foreach (var j in jobject)
-                //{
-                //    if (_Stats.ContainsKey(j.Key))
+                //    if (Enum.IsDefined(typeof(PlayableCharacters), character.Value.ToString()))
                 //    {
-                //        _Stats.TryGetValue(j.Key, out PlayerStats.StatType specificstat);
-                //        float.TryParse(j.Value.ToString(), out float value);
-                //        GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, value, GameManager.Instance.PrimaryPlayer);
-                //        ETGModConsole.Log(j.Key + " loaded to: <color=#ff0000ff>" + value + "</color>");
+                //        string[] characterName = new string[] { character.Value.ToString() };
+                //        SwitchCharacter(characterName);
                 //    }
                 //}
+
+                foreach (JProperty gun in deserialized["gunObject"])
+                {
+                    int id = 0;
+                    if (Int32.TryParse(gun.Value.ToString(), out id))
+                    {
+                        if (!GameManager.Instance.PrimaryPlayer.inventory.ContainsGun(id))
+                        {
+                            ETGModConsole.Log($"Loading gun: {gun.Name} with id: {gun.Value.ToString()}");
+                            GameManager.Instance.PrimaryPlayer.inventory.AddGunToInventory(PickupObjectDatabase.GetById(id) as Gun, true);
+                        }
+                    }
+                    else
+                    {
+                        ETGModConsole.Log($"Gun not in list!");
+                    }
+                }
+                
+                foreach (JProperty stat in deserialized["statsObject"])
+                {
+                    if (_Stats.ContainsKey(stat.Name))
+                    {
+                        _Stats.TryGetValue(stat.Name, out PlayerStats.StatType specificstat);
+                        GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, (float)stat.Value, GameManager.Instance.PrimaryPlayer);
+                    }
+                }
+
+                foreach (JProperty active in deserialized["activeObject"])
+                {
+                    int id = 0;
+                    if (Int32.TryParse(active.Value.ToString(), out id))
+                    {
+                        LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
+                    }
+                    else
+                    {
+                        ETGModConsole.Log($"Active item not in list!");
+                    }
+                }
+
+                foreach (JProperty passive in deserialized["passiveObject"])
+                {
+                    int id = 0;
+                    if (Int32.TryParse(passive.Value.ToString(), out id))
+                    {
+                        LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
+                    }
+                    else
+                    {
+                        ETGModConsole.Log($"Passive item not in list!");
+                    }
+                }
             }
             else
                 ETGModConsole.Log("File <color=#ff0000ff>" + filename + ".json </color>in the MagicSmokeSaves directory not found!");
@@ -320,12 +380,72 @@ namespace MagicSmoke
 
         public override void Start()
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public override void Exit()
         {
             //SaveSettings();
+        }
+
+        void SwitchCharacter(string[] args)
+        {
+            if (!ETGModConsole.ArgCount(args, 1, 2)) return;
+            var prefab = (GameObject)BraveResources.Load("Player" + args[0], ".prefab");//Resources.Load("Assets/Resources/CHARACTERDB:" + args[0] + ".prefab");
+            if (prefab == null)
+            {
+                Debug.Log(args[0] + " is not a mod character, checking if it's one of the standard characters");
+                prefab = (GameObject)Resources.Load("Player" + args[0]);
+            }
+            if (prefab == null)
+            {
+                //Log("Failed getting prefab for " + args[0]);
+                return;
+            }
+
+            //Pixelator.Instance.FadeToBlack(0.5f, false, 0f);
+            bool wasInGunGame = false;
+            if (GameManager.Instance.PrimaryPlayer)
+            {
+                wasInGunGame = GameManager.Instance.PrimaryPlayer.CharacterUsesRandomGuns;
+            }
+            GameManager.Instance.PrimaryPlayer.SetInputOverride("getting deleted");
+
+            PlayerController primaryPlayer = GameManager.Instance.PrimaryPlayer;
+            Vector3 position = primaryPlayer.transform.position;
+            UnityEngine.Object.Destroy(primaryPlayer.gameObject);
+            GameManager.Instance.ClearPrimaryPlayer();
+            GameManager.PlayerPrefabForNewGame = prefab;
+            PlayerController component = GameManager.PlayerPrefabForNewGame.GetComponent<PlayerController>();
+            GameStatsManager.Instance.BeginNewSession(component);
+            PlayerController playerController;
+            GameObject gameObject = (GameObject)UnityEngine.Object.Instantiate(GameManager.PlayerPrefabForNewGame, position, Quaternion.identity);
+            GameManager.PlayerPrefabForNewGame = null;
+            gameObject.SetActive(true);
+            playerController = gameObject.GetComponent<PlayerController>();
+            if (args.Length == 2)
+            {
+                component.SwapToAlternateCostume(null);
+            }
+            GameManager.Instance.PrimaryPlayer = playerController;
+            playerController.PlayerIDX = 0;
+
+            GameManager.Instance.MainCameraController.ClearPlayerCache();
+            GameManager.Instance.MainCameraController.SetManualControl(false, true);
+            Foyer.Instance.PlayerCharacterChanged(playerController);
+
+            //Pixelator.Instance.FadeToBlack(0.5f, true, 0f);
+
+            if (wasInGunGame)
+            {
+                GameManager.Instance.PrimaryPlayer.CharacterUsesRandomGuns = true;
+                while (GameManager.Instance.PrimaryPlayer.inventory.AllGuns.Count > 1)
+                {
+                    var gun = GameManager.Instance.PrimaryPlayer.inventory.AllGuns[1];
+                    GameManager.Instance.PrimaryPlayer.inventory.RemoveGunFromInventory(gun);
+                    UnityEngine.Object.Destroy(gun.gameObject);
+                }
+            }
         }
     }
 }
