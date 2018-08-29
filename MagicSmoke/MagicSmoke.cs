@@ -391,7 +391,7 @@ namespace MagicSmoke
                     {
                         
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
-                        ETGModConsole.Log($"Active item not in list!");
+                        
                     }
                     else
                     {
@@ -406,7 +406,7 @@ namespace MagicSmoke
                     if (Int32.TryParse(passive.Value.ToString(), out id))
                     {
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
-                        ETGModConsole.Log($"Passive item not in list!");
+                        
                     }
                     else
                     {
