@@ -65,7 +65,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>C:\"Program Files"\7-Zip\7z.exe a MagicSmoke.zip MagicSmoke.dll metadata.txt
+    <PostBuildEvent>C:\"Program Files"\7-Zip\7z.exe a MagicSmoke.zip MagicSmoke.dll $(ProjectDir)\metadata.txt
 copy MagicSmoke.zip C:\Shawn\00-Patching\"EntertheGungeonVanilla - Copy"\Mods\MagicSmoke.zip</PostBuildEvent>
   </PropertyGroup>
 </Project>

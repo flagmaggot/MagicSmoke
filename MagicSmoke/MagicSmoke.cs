@@ -6,6 +6,9 @@ using Newtonsoft;
 using System.IO;
 using Newtonsoft.Json;
 using Gungeon;
+using System.ComponentModel;
+using System.Reflection;
+using System.Linq;
 
 namespace MagicSmoke
 {
@@ -234,6 +237,7 @@ namespace MagicSmoke
                 synergy_Chest.IsRainbowChest = false;
                 IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
                 Chest.Spawn(synergy_Chest, basePosition);
+                synergy_Chest.ForceUnlock();
             });
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("spawnrainbowsynergy", (string[] args) =>
@@ -242,6 +246,7 @@ namespace MagicSmoke
                 synergy_Chest.IsRainbowChest = true;
                 IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
                 Chest.Spawn(synergy_Chest, basePosition);
+                synergy_Chest.ForceUnlock();
             });
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("savesettings", (string[] args) =>
@@ -249,6 +254,8 @@ namespace MagicSmoke
                 SaveSettings(args[0]);
                 ETGModConsole.Log("Settings file saved as: " + args[0] + ".json");
             });
+
+           
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("loadsettings", (string[] args) =>
             {
@@ -265,6 +272,23 @@ namespace MagicSmoke
             _SetGroup = _MsGroup.AddUnit("setmagnificence", _MagnificenceSet, _AutocompletionSettings);
         }
 
+        public static T GetFieldValue<T>(object obj, string fieldName)
+        {
+            if (obj == null)
+                throw new ArgumentNullException("obj");
+
+            var field = obj.GetType().GetField(fieldName, BindingFlags.Public |
+                                                          BindingFlags.NonPublic |
+                                                          BindingFlags.Instance);
+
+            if (field == null)
+                throw new ArgumentException("fieldName", "No such field was found.");
+
+            if (!typeof(T).IsAssignableFrom(field.FieldType))
+                throw new InvalidOperationException("Field type and requested type are not compatible.");
+
+            return (T)field.GetValue(obj);
+        }
 
         private void SaveSettings(string filename)
         {
