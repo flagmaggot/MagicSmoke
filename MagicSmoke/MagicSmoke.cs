@@ -168,7 +168,14 @@ namespace MagicSmoke
                 ETGModConsole.Log("ms get <stat name> - gets the state value", false);
                 ETGModConsole.Log("ms set <stat name> [arg] - sets the player speed (decimal values)", false);
                 ETGModConsole.Log("ms getallstats - returns all the stats and their values", false);
+                ETGModConsole.Log("ms forcedualwield [gunid] - forces the player to dual wield, use gun id numbers please.", false);
+                ETGModConsole.Log("ms spawnsynergy - spawns synergy chest", false);
                 ETGModConsole.Log("ms spawnrainbowsynergy - spawns rainbow synergy chest", false);
+                ETGModConsole.Log("ms savesettings [name] - saves player settings to a file [name].json", false);
+                ETGModConsole.Log("ms loadsettings [name] - loads player settings from a file [name].json", false);
+                ETGModConsole.Log("ms spawnglitched [arg] - spawns a glitch chest, [arg] can be a,b,c,d,s,red,green,blue,brown,black", false);
+                ETGModConsole.Log("ms setmagnificense [arg] - sets the magnificence value", false);
+                ETGModConsole.Log("ms getmagnificense [arg] - gets the current magnificence value", false);
             });
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("forcedualwield", (string[] args) =>
@@ -219,11 +226,12 @@ namespace MagicSmoke
             ETGModConsole.Commands.GetGroup("ms").AddUnit("spawnsynergy", (string[] args) =>
             {
                 Chest synergy_Chest = GameManager.Instance.RewardManager.Synergy_Chest;
-                if(args.Length != 0)
-                {
+                //if(args.Length != 0)
+                //{
 
-                     synergy_Chest.IsRainbowChest = true;
-                }
+                //     synergy_Chest.IsRainbowChest = true;
+                //}
+                synergy_Chest.IsRainbowChest = false;
                 IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
                 Chest.Spawn(synergy_Chest, basePosition);
             });
@@ -256,7 +264,6 @@ namespace MagicSmoke
             _SetGroup = _MsGroup.AddUnit("getmagnificence", _MagnificenceGet, _AutocompletionSettings);
             _SetGroup = _MsGroup.AddUnit("setmagnificence", _MagnificenceSet, _AutocompletionSettings);
         }
-
 
 
         private void SaveSettings(string filename)
@@ -313,12 +320,14 @@ namespace MagicSmoke
                 var jsonFile = Base64Decode(File.ReadAllText("MagicSmokeSaves/" + filename + ".json"));
                 
                 var deserialized = JsonConvert.DeserializeObject<JObject>(jsonFile);
+
                 //foreach (JProperty character in deserialized["characterObject"])
                 //{
                 //    if (Enum.IsDefined(typeof(PlayableCharacters), character.Value.ToString()))
                 //    {
                 //        string[] characterName = new string[] { character.Value.ToString() };
-                //        SwitchCharacter(characterName);
+                //        LoadCharacter(characterName);
+                        
                 //    }
                 //}
 
@@ -331,6 +340,7 @@ namespace MagicSmoke
                         {
                             ETGModConsole.Log($"Loading gun: {gun.Name} with id: {gun.Value.ToString()}");
                             GameManager.Instance.PrimaryPlayer.inventory.AddGunToInventory(PickupObjectDatabase.GetById(id) as Gun, true);
+                            ETGModConsole.Log($"Gun not in list!");
                         }
                     }
                     else
@@ -345,6 +355,7 @@ namespace MagicSmoke
                     {
                         _Stats.TryGetValue(stat.Name, out PlayerStats.StatType specificstat);
                         GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, (float)stat.Value, GameManager.Instance.PrimaryPlayer);
+
                     }
                 }
 
@@ -356,6 +367,7 @@ namespace MagicSmoke
                     {
                         
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
+                        ETGModConsole.Log($"Active item not in list!");
                     }
                     else
                     {
@@ -370,12 +382,15 @@ namespace MagicSmoke
                     if (Int32.TryParse(passive.Value.ToString(), out id))
                     {
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
+                        ETGModConsole.Log($"Passive item not in list!");
                     }
                     else
                     {
                         ETGModConsole.Log($"Passive item not in list!");
                     }
                 }
+
+
             }
             else
                 ETGModConsole.Log("File <color=#ff0000ff>" + filename + ".json </color>in the MagicSmokeSaves directory not found!");
@@ -391,9 +406,11 @@ namespace MagicSmoke
             //SaveSettings();
         }
 
-        void SwitchCharacter(string[] args)
+        void LoadCharacter(string[] args)
         {
-            if (!ETGModConsole.ArgCount(args, 1, 2)) return;
+            //Log("Trying to switch costume");
+
+            if (!ArgCount(args, 1, 2)) return;
             var prefab = (GameObject)BraveResources.Load("Player" + args[0], ".prefab");//Resources.Load("Assets/Resources/CHARACTERDB:" + args[0] + ".prefab");
             if (prefab == null)
             {
@@ -406,7 +423,7 @@ namespace MagicSmoke
                 return;
             }
 
-            //Pixelator.Instance.FadeToBlack(0.5f, false, 0f);
+            Pixelator.Instance.FadeToBlack(0.5f, false, 0f);
             bool wasInGunGame = false;
             if (GameManager.Instance.PrimaryPlayer)
             {
@@ -430,25 +447,56 @@ namespace MagicSmoke
             {
                 component.SwapToAlternateCostume(null);
             }
-            GameManager.Instance.PrimaryPlayer = playerController;
-            playerController.PlayerIDX = 0;
 
-            GameManager.Instance.MainCameraController.ClearPlayerCache();
-            GameManager.Instance.MainCameraController.SetManualControl(false, true);
-            Foyer.Instance.PlayerCharacterChanged(playerController);
-
-            //Pixelator.Instance.FadeToBlack(0.5f, true, 0f);
-
-            if (wasInGunGame)
+            try
             {
-                GameManager.Instance.PrimaryPlayer.CharacterUsesRandomGuns = true;
-                while (GameManager.Instance.PrimaryPlayer.inventory.AllGuns.Count > 1)
+                GameManager.Instance.PrimaryPlayer = playerController;
+                playerController.PlayerIDX = 0;
+
+                GameManager.Instance.MainCameraController.ClearPlayerCache();
+                GameManager.Instance.MainCameraController.SetManualControl(false, true);
+                Foyer.Instance.PlayerCharacterChanged(playerController);
+
+                Pixelator.Instance.FadeToBlack(0.5f, true, 0f);
+
+                if (wasInGunGame)
                 {
-                    var gun = GameManager.Instance.PrimaryPlayer.inventory.AllGuns[1];
-                    GameManager.Instance.PrimaryPlayer.inventory.RemoveGunFromInventory(gun);
-                    UnityEngine.Object.Destroy(gun.gameObject);
+                    GameManager.Instance.PrimaryPlayer.CharacterUsesRandomGuns = true;
+                    while (GameManager.Instance.PrimaryPlayer.inventory.AllGuns.Count > 1)
+                    {
+                        var gun = GameManager.Instance.PrimaryPlayer.inventory.AllGuns[1];
+                        GameManager.Instance.PrimaryPlayer.inventory.RemoveGunFromInventory(gun);
+                        UnityEngine.Object.Destroy(gun.gameObject);
+                    }
                 }
             }
+            catch 
+            {
+
+                ETGModConsole.Log($"Catching silly switch exception!");
+            }
+            
+        }
+
+        public static bool ArgCount(string[] args, int min)
+        {
+            if (args.Length >= min) return true;
+            //Log("Error: need at least " + min + " argument(s)");
+            return false;
+        }
+
+        public static bool ArgCount(string[] args, int min, int max)
+        {
+            if (args.Length >= min && args.Length <= max) return true;
+            if (min == max)
+            {
+                //Log("Error: need exactly " + min + " argument(s)");
+            }
+            else
+            {
+                //Log("Error: need between " + min + " and " + max + " argument(s)");
+            }
+            return false;
         }
     }
 }

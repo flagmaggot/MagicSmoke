@@ -60,6 +60,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatsBehavior.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="metadata.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>C:\"Program Files"\7-Zip\7z.exe a MagicSmoke.zip MagicSmoke.dll metadata.txt

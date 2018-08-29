@@ -1,0 +1,8 @@
+# Lines beginning with # are comment lines.
+
+Name: MagicSmoke
+Version: 0.4
+
+DLL: MagicSmoke.dll
+
+Depends: Base 0.3
