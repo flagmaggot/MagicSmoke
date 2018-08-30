@@ -185,8 +185,6 @@ namespace MagicSmoke
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("forcedualwield", (string[] args) =>
             {
-                if (_Chests.ContainsKey(args[0]))
-                {
                     if (args.Length < 1) throw new Exception("At least 1 argument required.");
                     var partner_id = int.Parse(args[0]);
                     var player = GameManager.Instance.PrimaryPlayer;
@@ -197,7 +195,6 @@ namespace MagicSmoke
                     forcer.Gun = gun;
                     forcer.PartnerGunID = partner_gun.PickupObjectId;
                     forcer.TargetPlayer = player;
-                }
             });
 
             _MagnificenceSet = (args) => {
