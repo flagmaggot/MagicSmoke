@@ -180,6 +180,7 @@ namespace MagicSmoke
                 ETGModConsole.Log("ms setmagnificense [arg] - sets the magnificence value", false);
                 ETGModConsole.Log("ms getmagnificense [arg] - gets the current magnificence value", false);
                 ETGModConsole.Log("ms saveclipboard  - copies the encoded settings to the clipboard", false);
+                ETGModConsole.Log("ms loadclipboard - loads the settings directly from clipboard", false);
                 ETGModConsole.Log("ms loadclipboard [arg] - loads the settings based off the encoded pasted data [arg]", false);
             });
 
@@ -274,7 +275,10 @@ namespace MagicSmoke
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("loadclipboard", (string[] args) =>
             {
-                LoadSettingsFromClipBoard(args[0]);
+                if(args.Count() == 0)
+                    LoadSettingsFromClipBoard();
+                else
+                    LoadSettingsFromClipBoard(args[0]);
                 ETGModConsole.Log("Loading settings from clipboard");
             });
 
@@ -464,9 +468,16 @@ namespace MagicSmoke
                 ETGModConsole.Log("File <color=#ff0000ff>" + filename + ".json </color>in the MagicSmokeSaves directory not found!");
         }
 
-        private void LoadSettingsFromClipBoard(string clipboard)
+        private void LoadSettingsFromClipBoard(string clipboard = "")
         {
-            var encodedJson = Base64Decode(clipboard);
+            string encodedJson = "";
+            if (clipboard == "")
+            {
+                ETGModConsole.Log($"{GUIUtility.systemCopyBuffer}");
+                encodedJson = Base64Decode(GUIUtility.systemCopyBuffer);
+            }
+            else
+                encodedJson = Base64Decode(clipboard);
             var deserialized = JsonConvert.DeserializeObject<JObject>(encodedJson);
 
             foreach (JProperty gun in deserialized["gunObject"])
