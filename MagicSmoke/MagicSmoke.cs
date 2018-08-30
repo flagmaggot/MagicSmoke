@@ -255,11 +255,28 @@ namespace MagicSmoke
                 ETGModConsole.Log("Settings file saved as: " + args[0] + ".json");
             });
 
-           
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("saveclipboard", (string[] args) =>
+            {
+                SaveSettingsToClipboard();
+                ETGModConsole.Log("Settings copied to clipboard");
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("summon", (string[] args) =>
+            {
+                ResourceManager.LoadAssetBundle("./shared_auto_001/Shrine_Mirror55");
+                ETGModConsole.Log("No");
+            });
+
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("loadsettings", (string[] args) =>
             {
                 LoadSettings(args[0]);
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("loadclipboard", (string[] args) =>
+            {
+                LoadSettingsFromClipBoard(args[0]);
+                ETGModConsole.Log("Loading settings from clipboard");
             });
 
             _MsGroup = ETGModConsole.Commands.GetGroup("ms");
@@ -267,7 +284,6 @@ namespace MagicSmoke
             _SetGroup = _MsGroup.AddUnit("get", _StatGet, _AutocompletionSettings);
             _SynergyChestGroup = _MsGroup.AddUnit("spawnglitched", _GlitchSpawn, _AutocompletionChests);
             _GetGroup = _MsGroup.AddUnit("getallstats", _StatGetAll, _AutocompletionSettings);
-
             _SetGroup = _MsGroup.AddUnit("getmagnificence", _MagnificenceGet, _AutocompletionSettings);
             _SetGroup = _MsGroup.AddUnit("setmagnificence", _MagnificenceSet, _AutocompletionSettings);
         }
@@ -321,8 +337,43 @@ namespace MagicSmoke
             }
 
             var json = JsonConvert.SerializeObject(new { gunObject, statsObject, activeObject, passiveObject },Newtonsoft.Json.Formatting.Indented);
+
             //var json = JsonConvert.SerializeObject(new { characterObject, gunObject, statsObject, activeObject, passiveObject }, Newtonsoft.Json.Formatting.Indented);
             File.WriteAllText("MagicSmokeSaves/" + filename + ".json", Base64Encode(json));
+        }
+
+        private void SaveSettingsToClipboard()
+        {
+            //JObject characterObject = new JObject();
+            //if (Enum.IsDefined(typeof(PlayableCharacters), GameManager.Instance.PrimaryPlayer.characterIdentity))
+            //    characterObject["character"] = GameManager.Instance.PrimaryPlayer.characterIdentity.ToString();
+
+            JObject statsObject = new JObject();
+            foreach (var stat in _Stats)
+            {
+                statsObject[stat.Key] = GameManager.Instance.PrimaryPlayer.stats.GetStatValue(stat.Value);
+            }
+
+            JObject gunObject = new JObject();
+            foreach (Gun i in GameManager.Instance.PrimaryPlayer.inventory.AllGuns)
+            {
+                gunObject[i.name] = i.PickupObjectId;
+            }
+
+            JObject passiveObject = new JObject();
+            foreach (PassiveItem i in GameManager.Instance.PrimaryPlayer.passiveItems)
+            {
+                passiveObject[i.name] = i.PickupObjectId;
+            }
+
+            JObject activeObject = new JObject();
+            foreach (PlayerItem i in GameManager.Instance.PrimaryPlayer.activeItems)
+            {
+                activeObject[i.name] = i.PickupObjectId;
+            }
+
+            var json = JsonConvert.SerializeObject(new { gunObject, statsObject, activeObject, passiveObject }, Newtonsoft.Json.Formatting.Indented);
+            GUIUtility.systemCopyBuffer = Base64Encode(json);
         }
 
         public static string Base64Encode(string plainText)
@@ -379,7 +430,6 @@ namespace MagicSmoke
                     {
                         _Stats.TryGetValue(stat.Name, out PlayerStats.StatType specificstat);
                         GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, (float)stat.Value, GameManager.Instance.PrimaryPlayer);
-
                     }
                 }
 
@@ -389,9 +439,7 @@ namespace MagicSmoke
                     GameManager.Instance.PrimaryPlayer.RemoveAllActiveItems();
                     if (Int32.TryParse(active.Value.ToString(), out id))
                     {
-                        
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
-                        
                     }
                     else
                     {
@@ -406,18 +454,74 @@ namespace MagicSmoke
                     if (Int32.TryParse(passive.Value.ToString(), out id))
                     {
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
-                        
                     }
                     else
                     {
                         ETGModConsole.Log($"Passive item not in list!");
                     }
                 }
-
-
             }
             else
                 ETGModConsole.Log("File <color=#ff0000ff>" + filename + ".json </color>in the MagicSmokeSaves directory not found!");
+        }
+
+        private void LoadSettingsFromClipBoard(string clipboard)
+        {
+            var encodedJson = Base64Decode(clipboard);
+            var deserialized = JsonConvert.DeserializeObject<JObject>(encodedJson);
+
+            foreach (JProperty gun in deserialized["gunObject"])
+            {
+                int id = 0;
+                if (Int32.TryParse(gun.Value.ToString(), out id))
+                {
+                    if (!GameManager.Instance.PrimaryPlayer.inventory.ContainsGun(id))
+                    {
+                        GameManager.Instance.PrimaryPlayer.inventory.AddGunToInventory(PickupObjectDatabase.GetById(id) as Gun, true);
+                    }
+                }
+                else
+                {
+                    ETGModConsole.Log($"Gun not in list!");
+                }
+            }
+
+            foreach (JProperty stat in deserialized["statsObject"])
+            {
+                if (_Stats.ContainsKey(stat.Name))
+                {
+                    _Stats.TryGetValue(stat.Name, out PlayerStats.StatType specificstat);
+                    GameManager.Instance.PrimaryPlayer.stats.SetBaseStatValue(specificstat, (float)stat.Value, GameManager.Instance.PrimaryPlayer);
+                }
+            }
+
+            foreach (JProperty active in deserialized["activeObject"])
+            {
+                int id = 0;
+                GameManager.Instance.PrimaryPlayer.RemoveAllActiveItems();
+                if (Int32.TryParse(active.Value.ToString(), out id))
+                {
+                    LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
+                }
+                else
+                {
+                    ETGModConsole.Log($"Active item not in list!");
+                }
+            }
+
+            foreach (JProperty passive in deserialized["passiveObject"])
+            {
+                int id = 0;
+                GameManager.Instance.PrimaryPlayer.RemoveAllPassiveItems();
+                if (Int32.TryParse(passive.Value.ToString(), out id))
+                {
+                    LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
+                }
+                else
+                {
+                    ETGModConsole.Log($"Passive item not in list!");
+                }
+            }
         }
 
         public override void Start()
@@ -496,10 +600,8 @@ namespace MagicSmoke
             }
             catch 
             {
-
                 ETGModConsole.Log($"Catching silly switch exception!");
             }
-            
         }
 
         public static bool ArgCount(string[] args, int min)
