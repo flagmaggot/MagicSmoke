@@ -179,6 +179,8 @@ namespace MagicSmoke
                 ETGModConsole.Log("ms spawnglitched [arg] - spawns a glitch chest, [arg] can be a,b,c,d,s,red,green,blue,brown,black", false);
                 ETGModConsole.Log("ms setmagnificense [arg] - sets the magnificence value", false);
                 ETGModConsole.Log("ms getmagnificense [arg] - gets the current magnificence value", false);
+                ETGModConsole.Log("ms saveclipboard  - copies the encoded settings to the clipboard", false);
+                ETGModConsole.Log("ms loadclipboard [arg] - loads the settings based off the encoded pasted data [arg]", false);
             });
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("forcedualwield", (string[] args) =>
