@@ -1,7 +1,7 @@
 # Lines beginning with # are comment lines.
 
 Name: MagicSmoke
-Version: 0.9
+Version: 0.10
 
 DLL: MagicSmoke.dll
 

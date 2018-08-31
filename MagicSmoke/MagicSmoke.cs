@@ -76,6 +76,7 @@ namespace MagicSmoke
         private static Action<string[]> _GlitchSpawn;
         private static Action<string[]> _MagnificenceSet;
         private static Action<string[]> _MagnificenceGet;
+        
 
         public void SetStat(PlayerController player, PlayerStats.StatType type, float val)
         {
@@ -135,9 +136,13 @@ namespace MagicSmoke
                 {
                     Chest glitchedchest = _Chests[args[0]];
                     glitchedchest.ForceGlitchChest = true;
+                    glitchedchest.ForceUnlock();
+                    ETGModConsole.Log($"Chest type: {glitchedchest.ChestType}");
                     glitchedchest.BecomeGlitchChest();
                     IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
                     Chest.Spawn(glitchedchest, basePosition);
+                    
+                    
                 }
                 else
                     ETGModConsole.Log($"Please check your command and try again");
@@ -171,7 +176,7 @@ namespace MagicSmoke
                 ETGModConsole.Log("ms get <stat name> - gets the state value", false);
                 ETGModConsole.Log("ms set <stat name> [arg] - sets the player speed (decimal values)", false);
                 ETGModConsole.Log("ms getallstats - returns all the stats and their values", false);
-                ETGModConsole.Log("ms forcedualwield [gunid] - forces the player to dual wield, use gun id numbers please.", false);
+                ETGModConsole.Log("ms forcedualwield [gunid] - forces the player to dual wield, use gun names, it will autocomplete to help.", false);
                 ETGModConsole.Log("ms spawnsynergy - spawns synergy chest", false);
                 ETGModConsole.Log("ms spawnrainbowsynergy - spawns rainbow synergy chest", false);
                 ETGModConsole.Log("ms savesettings [name] - saves player settings to a file [name].json", false);
@@ -184,20 +189,9 @@ namespace MagicSmoke
                 ETGModConsole.Log("ms loadclipboard [arg] - loads the settings based off the encoded pasted data [arg]", false);
             });
 
-            ETGModConsole.Commands.GetGroup("ms").AddUnit("forcedualwield", (string[] args) =>
-            {
-                    if (args.Length < 1) throw new Exception("At least 1 argument required.");
-                    var partner_id = int.Parse(args[0]);
-                    var player = GameManager.Instance.PrimaryPlayer;
-                    var gun = player.inventory.CurrentGun;
-                    var partner_gun = PickupObjectDatabase.GetById(partner_id) as Gun;
-                    player.inventory.AddGunToInventory(partner_gun);
-                    var forcer = gun.gameObject.AddComponent<DualWieldForcer>();
-                    forcer.Gun = gun;
-                    forcer.PartnerGunID = partner_gun.PickupObjectId;
-                    forcer.TargetPlayer = player;
-            });
 
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("forcedualwield", DualWieldItem, _GiveAutocompletionSettings);
+            
             _MagnificenceSet = (args) => {
                 float value;
                 if (float.TryParse(args[0], out value))
@@ -235,6 +229,7 @@ namespace MagicSmoke
                 //     synergy_Chest.IsRainbowChest = true;
                 //}
                 synergy_Chest.IsRainbowChest = false;
+                synergy_Chest.ForceUnlock();
                 IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
                 Chest.Spawn(synergy_Chest, basePosition);
                 synergy_Chest.ForceUnlock();
@@ -273,6 +268,30 @@ namespace MagicSmoke
                 LoadSettings(args[0]);
             });
 
+            //ETGModConsole.Commands.GetGroup("ms").AddUnit("findchests", (string[] args) =>
+            //{
+
+            //    //ETGModConsole.Log($"Number of chests: {StaticReferenceManager.AllChests.Count()}");
+            //    //foreach (Chest c in StaticReferenceManager.AllChests)
+            //    //{
+            //    //    ETGModConsole.Log($"Placed position: {c.PlacedPosition}");
+            //    //    ETGModConsole.Log($"Transform position: {c.transform.position}");
+            //    //    ETGModConsole.Log($"Local position: {c.transform.localPosition}");
+
+            //    //    Chest chest = GameManager.Instance.RewardManager.A_Chest;
+            //    //    chest = c;
+
+            //    //    Vector3 place = new Vector3((c.transform.position.x+1), (c.transform.position.y+1), (c.transform.position.y));
+            //    //    chest.transform.position = place;
+
+            //    //    IntVector2 basePosition = new IntVector2((int)chest.transform.position.x + 1, (int)chest.transform.position.y + 1);
+            //    //    Chest.Spawn(chest, basePosition,c.GetAbsoluteParentRoom(),false);
+            //    //    ETGModConsole.Log($"Placed chest position: {chest.PlacedPosition}");
+            //    //    ETGModConsole.Log($"Transform chest position: {chest.transform.position}");
+            //    //    ETGModConsole.Log($"Local chest position: {chest.transform.localPosition}");
+            //    //}
+            //});
+
             ETGModConsole.Commands.GetGroup("ms").AddUnit("loadclipboard", (string[] args) =>
             {
                 if(args.Count() == 0)
@@ -290,6 +309,47 @@ namespace MagicSmoke
             _SetGroup = _MsGroup.AddUnit("getmagnificence", _MagnificenceGet, _AutocompletionSettings);
             _SetGroup = _MsGroup.AddUnit("setmagnificence", _MagnificenceSet, _AutocompletionSettings);
         }
+
+        void DualWieldItem(string[] args)
+        {
+            if (!ArgCount(args, 1, 2)) return;
+
+            if (!GameManager.Instance.PrimaryPlayer)
+            {
+                ETGModConsole.Log("Couldn't access Player Controller");
+                return;
+            }
+
+            string id = args[0];
+            if (!Game.Items.ContainsID(id))
+            {
+                ETGModConsole.Log($"Invalid item ID {id}!");
+                return;
+            }
+
+            ETGModConsole.Log("Attempting to force wield " + args[0] + " (numeric " + id + ")" + ", class " + Game.Items.Get(id).GetType());
+
+
+            if (!Game.Items.ContainsID(id))
+            {
+                ETGModConsole.Log($"Invalid item ID {id}!");
+                return;
+            }
+            
+            if (args.Length < 1) throw new Exception("At least 1 argument required.");
+            
+            var player = GameManager.Instance.PrimaryPlayer;
+            var gun = player.inventory.CurrentGun;
+            int idNumber;
+            int.TryParse(id, out idNumber);
+            var partner_gun = PickupObjectDatabase.GetById(idNumber) as Gun;
+            player.inventory.AddGunToInventory(partner_gun);
+            var forcer = gun.gameObject.AddComponent<DualWieldForcer>();
+            forcer.Gun = gun;
+            forcer.PartnerGunID = partner_gun.PickupObjectId;
+            forcer.TargetPlayer = player;
+        }
+
 
         public static T GetFieldValue<T>(object obj, string fieldName)
         {
@@ -543,6 +603,24 @@ namespace MagicSmoke
         {
             //SaveSettings();
         }
+
+        protected static AutocompletionSettings _GiveAutocompletionSettings = new AutocompletionSettings(delegate (string input) {
+            List<string> ret = new List<string>();
+            foreach (string key in Game.Items.IDs)
+            {
+                if (key.AutocompletionMatch(input.ToLower()))
+                {
+                    Console.WriteLine($"INPUT {input} KEY {key} MATCH!");
+                    ret.Add(key.Replace("gungeon:", ""));
+                }
+                else
+                {
+                    Console.WriteLine($"INPUT {input} KEY {key} NO MATCH!");
+                }
+            }
+            return ret.ToArray();
+        });
+
 
         void LoadCharacter(string[] args)
         {
