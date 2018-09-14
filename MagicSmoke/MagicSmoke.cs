@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
@@ -9,6 +9,8 @@ using Gungeon;
 using System.ComponentModel;
 using System.Reflection;
 using System.Linq;
+using Dungeonator;
+using System.Text;
 
 namespace MagicSmoke
 {
@@ -131,22 +133,7 @@ namespace MagicSmoke
                     ETGModConsole.Log($"Please check your command and try again");
             };
 
-            _GlitchSpawn = (args) => {
-                if (_Chests.ContainsKey(args[0]))
-                {
-                    Chest glitchedchest = _Chests[args[0]];
-                    glitchedchest.ForceGlitchChest = true;
-                    glitchedchest.ForceUnlock();
-                    ETGModConsole.Log($"Chest type: {glitchedchest.ChestType}");
-                    glitchedchest.BecomeGlitchChest();
-                    IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
-                    Chest.Spawn(glitchedchest, basePosition);
-                    
-                    
-                }
-                else
-                    ETGModConsole.Log($"Please check your command and try again");
-            };
+
 
             _StatGetAll = (args) => {
                 ETGModConsole.Log("Available stats:");
@@ -172,23 +159,34 @@ namespace MagicSmoke
                 ETGModConsole.Log("<size=100><color=#ff0000ff>--------------------------------</color></size>", false);
                 ETGModConsole.Log("Magic Smoke Command Reference:", false);
                 ETGModConsole.Log("", false);
-                ETGModConsole.Log("ms help - Displays this help", false);
-                ETGModConsole.Log("ms get <stat name> - gets the state value", false);
-                ETGModConsole.Log("ms set <stat name> [arg] - sets the player speed (decimal values)", false);
-                ETGModConsole.Log("ms getallstats - returns all the stats and their values", false);
-                ETGModConsole.Log("ms forcedualwield [gunid] - forces the player to dual wield, use gun names, it will autocomplete to help.", false);
-                ETGModConsole.Log("ms spawnsynergy - spawns synergy chest", false);
-                ETGModConsole.Log("ms spawnrainbowsynergy - spawns rainbow synergy chest", false);
-                ETGModConsole.Log("ms savesettings [name] - saves player settings to a file [name].json", false);
-                ETGModConsole.Log("ms loadsettings [name] - loads player settings from a file [name].json", false);
-                ETGModConsole.Log("ms spawnglitched [arg] - spawns a glitch chest, [arg] can be a,b,c,d,s,red,green,blue,brown,black", false);
-                ETGModConsole.Log("ms setmagnificense [arg] - sets the magnificence value", false);
-                ETGModConsole.Log("ms getmagnificense [arg] - gets the current magnificence value", false);
-                ETGModConsole.Log("ms saveclipboard  - copies the encoded settings to the clipboard", false);
-                ETGModConsole.Log("ms loadclipboard - loads the settings directly from clipboard", false);
-                ETGModConsole.Log("ms loadclipboard [arg] - loads the settings based off the encoded pasted data [arg]", false);
+                ETGModConsole.Log("<color=#FFFF33>ms help</color> - Displays this help", false);
+                ETGModConsole.Log("<color=#FFFF33>ms get <stat name></color> - gets the state value", false);
+                ETGModConsole.Log("<color=#FFFF33>ms set <stat name> [arg]</color> - sets the player speed (decimal values)", false);
+                ETGModConsole.Log("<color=#FFFF33>ms getallstats</color> - returns all the stats and their values", false);
+                ETGModConsole.Log("<color=#FFFF33>ms forcedualwield [gunid]</color> - forces the player to dual wield, use gun names, it will autocomplete to help.", false);
+                ETGModConsole.Log("<color=#FFFF33>ms spawnsynergy</color> - spawns synergy chest", false);
+                ETGModConsole.Log("<color=#FFFF33>ms spawnrainbowsynergy</color> - spawns rainbow synergy chest", false);
+                ETGModConsole.Log("<color=#FFFF33>ms savesettings [name</color> - saves player settings to a file [name].json", false);
+                ETGModConsole.Log("<color=#FFFF33>ms loadsettings [name]</color> - loads player settings from a file [name].json", false);
+                ETGModConsole.Log("<color=#FFFF33>ms spawnglitched [arg] [true]</color> - spawns a glitch chest, [arg] can be a,b,c,d,s,red,green,blue,brown,black [use true after if you want to warp to glitched level]", false);
+                ETGModConsole.Log("<color=#FFFF33>ms setmagnificense [arg]</color> - sets the magnificence value", false);
+                ETGModConsole.Log("<color=#FFFF33>ms getmagnificense [arg]</color> - gets the current magnificence value", false);
+                ETGModConsole.Log("<color=#FFFF33>ms saveclipboard</color>  - copies the encoded settings to the clipboard", false);
+                ETGModConsole.Log("<color=#FFFF33>ms loadclipboard</color> - loads the settings directly from clipboard", false);
+                ETGModConsole.Log("<color=#FFFF33>ms loadclipboard [arg</color>] - loads the settings based off the encoded pasted data [arg]", false);
+                ETGModConsole.Log("<color=#FFFF33>ms pollthegungeon</color> - Request from YouTuber Hutts, finds all chests on current floor and spawns 3 additional random chests.", false);
+                ETGModConsole.Log("<color=#FFFF33>ms findchests</color> - gives coordinates for all chests currently on the floor (you can teleport to them by using tp <first number> <second number>", false);
+                ETGModConsole.Log("<color=#FFFF33>ms addteleporters</color> - adds teleporters to almost all the rooms on the current dungeon", false);
+                ETGModConsole.Log("<color=#FFFF33>ms visitallrooms</color> - marks all rooms as visited, makes all visible on minimap", false);
+                ETGModConsole.Log("<color=#FFFF33>ms revealrooms</color> - makes all rooms visible (similar to Floor revealed item)", false);
+                ETGModConsole.Log("<color=#FFFF33>ms dropactives</color> - drops all active items", false);
+                ETGModConsole.Log("<color=#FFFF33>ms droppassives</color> - drops all passive items", false);
+                ETGModConsole.Log("<color=#FFFF33>ms dropall</color> - drop all items and guns (except defauilt gun)", false);
+                ETGModConsole.Log("<color=#FFFF33>ms clearall</color> - clears all active and passive items.", false);
+                ETGModConsole.Log("<color=#FFFF33>ms clearpassives</color> - clears passive items", false);
+                ETGModConsole.Log("<color=#FFFF33>ms clearactives</color> - clears active items", false);
+                ETGModConsole.Log("<color=#FFFF33>ms dropguns</color> - drops all guns (except default gun)", false);
             });
-
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("forcedualwield", DualWieldItem, _GiveAutocompletionSettings);
             
@@ -256,40 +254,202 @@ namespace MagicSmoke
                 ETGModConsole.Log("Settings copied to clipboard");
             });
 
-            ETGModConsole.Commands.GetGroup("ms").AddUnit("summon", (string[] args) =>
+            //ETGModConsole.Commands.GetGroup("ms").AddUnit("summon", (string[] args) =>
+            //{
+            //    //ResourceManager.LoadAssetBundle("./shared_auto_001/Shrine_Mirror55");
+            //    AdvancedShrineController ads = new AdvancedShrineController();
+            //    ads.IsBlankShrine = true;
+
+            //    ads.Start();
+            //    ETGModConsole.Log("No");
+            //});
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("zoom", (string[] args) =>
             {
-                ResourceManager.LoadAssetBundle("./shared_auto_001/Shrine_Mirror55");
-                ETGModConsole.Log("No");
+                if (args.Count() > 0)
+                {
+                    float zoomScale;
+                    float.TryParse(args[0], out zoomScale);
+                    GameManager.Instance.MainCameraController.OverrideZoomScale = zoomScale;
+                    ETGModConsole.Log($"Camera zoom set to {zoomScale}");
+                }
             });
 
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("pollthegungeon", (string[] args) =>
+            {
+                List<Chest> chests = new List<Chest>();
+                chests = StaticReferenceManager.AllChests;
+                
+                foreach(Chest c in chests.ToList())
+                {
+                    RoomHandler room = c.GetAbsoluteParentRoom();
+                    while(room.GetComponentsAbsoluteInRoom<Chest>().Count() < 4)
+                    {
+                        for (int i = 0; i < 3; i++)
+                        {
+                            SpawnChests(room);
+                        }
+                    }
+                }
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("findchests", (string[] args) =>
+            {
+                List<Chest> chests = StaticReferenceManager.AllChests;
+
+                foreach (Chest c in chests)
+                {
+                    ETGModConsole.Log($"Chest location: <color=#ff0000ff>{c.transform.position}</color>");
+                }
+            });
+
+            //ETGModConsole.Commands.GetGroup("ms").AddUnit("open", (string[] args) =>
+            //{
+            //    List<Chest> chests = StaticReferenceManager.AllChests;
+
+            //    foreach (Chest c in chests)
+            //    {
+            //        ETGModConsole.Log($"Chest location: <color=#ff0000ff>{c.transform.position}</color>");
+            //    }
+            //});
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("addteleporters", (string[] args) =>
+            {
+                List<RoomHandler> rooms =  GameManager.Instance.Dungeon.data.rooms;
+                foreach(RoomHandler room in rooms)
+                {
+                    try
+                    {
+                        
+                        room.AddProceduralTeleporterToRoom();
+                    }
+                    catch (Exception)
+                    {
+                        //do nothing
+                    }
+                }
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("visitallrooms", (string[] args) =>
+            {
+                List<RoomHandler> rooms = GameManager.Instance.Dungeon.data.rooms;
+                foreach (RoomHandler room in rooms)
+                {
+                    room.visibility = RoomHandler.VisibilityStatus.VISITED;
+                }
+                Minimap.Instance.RevealAllRooms(true);
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("revealrooms", (string[] args) =>
+            {
+                List<RoomHandler> rooms = GameManager.Instance.Dungeon.data.rooms;
+
+                foreach (RoomHandler room in rooms)
+                {
+                    Minimap.Instance.RevealAllRooms(true);
+                }
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("getroomname", (string[] args) =>
+            {
+                
+                ETGModConsole.Log($"{GameManager.Instance.PrimaryPlayer.GetAbsoluteParentRoom().GetRoomName()}");
+                   
+            });
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("loadsettings", (string[] args) =>
             {
                 LoadSettings(args[0]);
             });
 
-            //ETGModConsole.Commands.GetGroup("ms").AddUnit("findchests", (string[] args) =>
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("dropactives", (string[] args) =>
+            {
+                foreach (PlayerItem i in GameManager.Instance.PrimaryPlayer.activeItems.ToList())
+                {
+                    GameManager.Instance.PrimaryPlayer.DropActiveItem(i);
+                }
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("droppassives", (string[] args) =>
+            {
+                foreach (PassiveItem i in GameManager.Instance.PrimaryPlayer.passiveItems.ToList())
+                {
+                    GameManager.Instance.PrimaryPlayer.DropPassiveItem(i);
+                }
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("dropall", (string[] args) =>
+            {
+                foreach (PassiveItem i in GameManager.Instance.PrimaryPlayer.passiveItems.ToList())
+                {
+                    GameManager.Instance.PrimaryPlayer.DropPassiveItem(i);
+                }
+                foreach (PlayerItem i in GameManager.Instance.PrimaryPlayer.activeItems.ToList())
+                {
+                    GameManager.Instance.PrimaryPlayer.DropActiveItem(i);
+                }
+                foreach (Gun i in GameManager.Instance.PrimaryPlayer.inventory.AllGuns.ToList())
+                {
+                    GameManager.Instance.PrimaryPlayer.ForceDropGun(i);
+                }
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("clearall", (string[] args) =>
+            {
+                GameManager.Instance.PrimaryPlayer.RemoveAllActiveItems();
+                GameManager.Instance.PrimaryPlayer.RemoveAllPassiveItems();
+                foreach (Gun i in GameManager.Instance.PrimaryPlayer.inventory.AllGuns.ToList())
+                {
+                    GameManager.Instance.PrimaryPlayer.ForceDropGun(i);
+                }
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("clearactives", (string[] args) =>
+            {
+                GameManager.Instance.PrimaryPlayer.RemoveAllActiveItems();
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("clearpassives", (string[] args) =>
+            {
+                GameManager.Instance.PrimaryPlayer.RemoveAllPassiveItems();
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("dropguns", (string[] args) =>
+            {
+                foreach (Gun i in GameManager.Instance.PrimaryPlayer.inventory.AllGuns.ToList())
+                {
+                    GameManager.Instance.PrimaryPlayer.ForceDropGun(i);
+                }
+            });
+
+            ETGModConsole.Commands.GetGroup("ms").AddUnit("charmall", (string[] args) =>
+            {
+                if (args.Count() == 0 || args[0]=="true")
+                {
+                    foreach (AIActor actor in StaticReferenceManager.AllEnemies)
+                    {
+                        //AkSoundEngine.PostEvent("Play_OBJ_enemy_charmed_01", GameManager.Instance.gameObject);
+                        AIActor aiactor = actor as AIActor;
+                        aiactor.CanTargetEnemies = true;
+                        aiactor.CanTargetPlayers = false;
+                    }
+                }
+                else if(args[0]=="false")
+                {
+                    foreach (AIActor actor in StaticReferenceManager.AllEnemies)
+                    {
+                        //AkSoundEngine.PostEvent("Play_OBJ_enemy_charmed_01", GameManager.Instance.gameObject);
+                        AIActor aiactor = actor as AIActor;
+                        aiactor.CanTargetEnemies = false;
+                        aiactor.CanTargetPlayers = true;
+                    }
+                }
+            });
+
+            //ETGModConsole.Commands.GetGroup("ms").AddUnit("removeallcompanions", (string[] args) =>
             //{
-
-            //    //ETGModConsole.Log($"Number of chests: {StaticReferenceManager.AllChests.Count()}");
-            //    //foreach (Chest c in StaticReferenceManager.AllChests)
-            //    //{
-            //    //    ETGModConsole.Log($"Placed position: {c.PlacedPosition}");
-            //    //    ETGModConsole.Log($"Transform position: {c.transform.position}");
-            //    //    ETGModConsole.Log($"Local position: {c.transform.localPosition}");
-
-            //    //    Chest chest = GameManager.Instance.RewardManager.A_Chest;
-            //    //    chest = c;
-
-            //    //    Vector3 place = new Vector3((c.transform.position.x+1), (c.transform.position.y+1), (c.transform.position.y));
-            //    //    chest.transform.position = place;
-
-            //    //    IntVector2 basePosition = new IntVector2((int)chest.transform.position.x + 1, (int)chest.transform.position.y + 1);
-            //    //    Chest.Spawn(chest, basePosition,c.GetAbsoluteParentRoom(),false);
-            //    //    ETGModConsole.Log($"Placed chest position: {chest.PlacedPosition}");
-            //    //    ETGModConsole.Log($"Transform chest position: {chest.transform.position}");
-            //    //    ETGModConsole.Log($"Local chest position: {chest.transform.localPosition}");
-            //    //}
+            //    //GameManager.Instance.PrimaryPlayer.companions.RemoveAll(AIActor);
+            //    GameManager.Instance.PrimaryPlayer.companions.Clear();
             //});
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("loadclipboard", (string[] args) =>
@@ -301,6 +461,24 @@ namespace MagicSmoke
                 ETGModConsole.Log("Loading settings from clipboard");
             });
 
+            _GlitchSpawn = (args) => {
+                if (_Chests.ContainsKey(args[0]))
+                {
+                    Chest glitchedchest = _Chests[args[0]];
+                    glitchedchest.ForceGlitchChest = true;
+                    glitchedchest.ForceUnlock();
+                    glitchedchest.BecomeGlitchChest();
+                    IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
+                    Chest.Spawn(glitchedchest, basePosition);
+                    if(args.Count()==2)
+                        if(args[1]=="true")
+                            ETGMod.Chest.OnPostOpen += glitchopen;
+                }
+                else
+                    ETGModConsole.Log($"Please check your command and try again");
+            };
+
+
             _MsGroup = ETGModConsole.Commands.GetGroup("ms");
             _SetGroup = _MsGroup.AddUnit("set", _StatSet, _AutocompletionSettings);
             _SetGroup = _MsGroup.AddUnit("get", _StatGet, _AutocompletionSettings);
@@ -308,6 +486,46 @@ namespace MagicSmoke
             _GetGroup = _MsGroup.AddUnit("getallstats", _StatGetAll, _AutocompletionSettings);
             _SetGroup = _MsGroup.AddUnit("getmagnificence", _MagnificenceGet, _AutocompletionSettings);
             _SetGroup = _MsGroup.AddUnit("setmagnificence", _MagnificenceSet, _AutocompletionSettings);
+        }
+
+        
+
+        private void glitchopen(Chest c, PlayerController pc)
+        {
+            if (GameManager.Instance.CurrentGameType == GameManager.GameType.COOP_2_PLAYER)
+            {
+                PlayerController otherPlayer = GameManager.Instance.GetOtherPlayer(pc);
+                if (otherPlayer && otherPlayer.IsGhost)
+                {
+                    //pc.StartCoroutine(GiveCoopPartnerBack2(false));
+                    AkSoundEngine.PostEvent("play_obj_chest_open_01", c.gameObject);
+                    AkSoundEngine.PostEvent("stop_obj_fuse_loop_01", c.gameObject);
+                    PlayerController deadPlayer = (!GameManager.Instance.PrimaryPlayer.healthHaver.IsDead) ? GameManager.Instance.SecondaryPlayer : GameManager.Instance.PrimaryPlayer;
+                    deadPlayer.specRigidbody.enabled = true;
+                    deadPlayer.gameObject.SetActive(true);
+                    deadPlayer.sprite.renderer.enabled = true;
+                    deadPlayer.ResurrectFromChest(c.sprite.WorldBottomCenter);
+                }
+            }
+            GameManager.Instance.InjectedFlowPath = "Core Game Flows/Secret_DoubleBeholster_Flow";
+            Pixelator.Instance.FadeToBlack(0.5f, false, 0f);
+            GameManager.Instance.DelayedLoadNextLevel(0.5f);
+            ETGMod.Chest.OnPostOpen -= glitchopen;
+        }
+
+
+        private static void SpawnChests(RoomHandler r)//, Chest chest)
+        {
+            Chest chest = new Chest();
+            chest = GameManager.Instance.RewardManager.A_Chest;
+            WeightedGameObject wGameObject = new WeightedGameObject();
+            wGameObject.rawGameObject = chest.gameObject;
+            WeightedGameObjectCollection wGameObjectCollection = new WeightedGameObjectCollection();
+            wGameObjectCollection.Add(wGameObject);
+            
+            Chest spawnedChest = GameManager.Instance.RewardManager.SpawnTotallyRandomChest(r.GetBestRewardLocation(new IntVector2(2, 1), Dungeonator.RoomHandler.RewardLocationStyle.PlayerCenter, true));
+            spawnedChest.ForceUnlock();
+            spawnedChest.overrideMimicChance = 0f;
         }
 
         void DualWieldItem(string[] args)
@@ -330,19 +548,22 @@ namespace MagicSmoke
             ETGModConsole.Log("Attempting to force wield " + args[0] + " (numeric " + id + ")" + ", class " + Game.Items.Get(id).GetType());
 
 
-            if (!Game.Items.ContainsID(id))
-            {
-                ETGModConsole.Log($"Invalid item ID {id}!");
-                return;
-            }
-            
+
             if (args.Length < 1) throw new Exception("At least 1 argument required.");
-            
+
             var player = GameManager.Instance.PrimaryPlayer;
             var gun = player.inventory.CurrentGun;
             int idNumber;
             int.TryParse(id, out idNumber);
-            var partner_gun = PickupObjectDatabase.GetById(idNumber) as Gun;
+            var test = Game.Items[id];
+            var partner_gun = PickupObjectDatabase.GetByName(test.name) as Gun;
+
+            if(GameManager.Instance.PrimaryPlayer.inventory.AllGuns.Contains(partner_gun))
+            {
+                //GameManager.Instance.PrimaryPlayer.ForceDropGun(i);
+                GameManager.Instance.PrimaryPlayer.ForceDropGun(partner_gun);
+            }
+
             player.inventory.AddGunToInventory(partner_gun);
             var forcer = gun.gameObject.AddComponent<DualWieldForcer>();
             forcer.Gun = gun;
@@ -496,10 +717,11 @@ namespace MagicSmoke
                     }
                 }
 
+                GameManager.Instance.PrimaryPlayer.RemoveAllActiveItems();
                 foreach (JProperty active in deserialized["activeObject"])
                 {
                     int id = 0;
-                    GameManager.Instance.PrimaryPlayer.RemoveAllActiveItems();
+
                     if (Int32.TryParse(active.Value.ToString(), out id))
                     {
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
@@ -510,13 +732,15 @@ namespace MagicSmoke
                     }
                 }
 
+                GameManager.Instance.PrimaryPlayer.RemoveAllPassiveItems();
                 foreach (JProperty passive in deserialized["passiveObject"])
                 {
                     int id = 0;
-                    GameManager.Instance.PrimaryPlayer.RemoveAllPassiveItems();
+                    
                     if (Int32.TryParse(passive.Value.ToString(), out id))
                     {
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
+                        ETGModConsole.Log($"Passive item {id}!");
                     }
                     else
                     {
@@ -565,10 +789,10 @@ namespace MagicSmoke
                 }
             }
 
+            GameManager.Instance.PrimaryPlayer.RemoveAllActiveItems();
             foreach (JProperty active in deserialized["activeObject"])
             {
                 int id = 0;
-                GameManager.Instance.PrimaryPlayer.RemoveAllActiveItems();
                 if (Int32.TryParse(active.Value.ToString(), out id))
                 {
                     LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
@@ -579,10 +803,10 @@ namespace MagicSmoke
                 }
             }
 
+            GameManager.Instance.PrimaryPlayer.RemoveAllPassiveItems();
             foreach (JProperty passive in deserialized["passiveObject"])
             {
                 int id = 0;
-                GameManager.Instance.PrimaryPlayer.RemoveAllPassiveItems();
                 if (Int32.TryParse(passive.Value.ToString(), out id))
                 {
                     LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
@@ -603,6 +827,13 @@ namespace MagicSmoke
         {
             //SaveSettings();
         }
+
+        //[Obsolete]
+        //public override void Update()
+        //{
+        //    ETGModConsole.Log($"Yay2");
+        //    base.Update();
+        //}
 
         protected static AutocompletionSettings _GiveAutocompletionSettings = new AutocompletionSettings(delegate (string input) {
             List<string> ret = new List<string>();
