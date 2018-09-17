@@ -78,7 +78,7 @@ namespace MagicSmoke
         private static Action<string[]> _GlitchSpawn;
         private static Action<string[]> _MagnificenceSet;
         private static Action<string[]> _MagnificenceGet;
-        
+
 
         public void SetStat(PlayerController player, PlayerStats.StatType type, float val)
         {
@@ -189,7 +189,7 @@ namespace MagicSmoke
             });
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("forcedualwield", DualWieldItem, _GiveAutocompletionSettings);
-            
+
             _MagnificenceSet = (args) => {
                 float value;
                 if (float.TryParse(args[0], out value))
@@ -279,11 +279,11 @@ namespace MagicSmoke
             {
                 List<Chest> chests = new List<Chest>();
                 chests = StaticReferenceManager.AllChests;
-                
-                foreach(Chest c in chests.ToList())
+
+                foreach (Chest c in chests.ToList())
                 {
                     RoomHandler room = c.GetAbsoluteParentRoom();
-                    while(room.GetComponentsAbsoluteInRoom<Chest>().Count() < 4)
+                    while (room.GetComponentsAbsoluteInRoom<Chest>().Count() < 4)
                     {
                         for (int i = 0; i < 3; i++)
                         {
@@ -315,12 +315,12 @@ namespace MagicSmoke
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("addteleporters", (string[] args) =>
             {
-                List<RoomHandler> rooms =  GameManager.Instance.Dungeon.data.rooms;
-                foreach(RoomHandler room in rooms)
+                List<RoomHandler> rooms = GameManager.Instance.Dungeon.data.rooms;
+                foreach (RoomHandler room in rooms)
                 {
                     try
                     {
-                        
+
                         room.AddProceduralTeleporterToRoom();
                     }
                     catch (Exception)
@@ -352,9 +352,9 @@ namespace MagicSmoke
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("getroomname", (string[] args) =>
             {
-                
+
                 ETGModConsole.Log($"{GameManager.Instance.PrimaryPlayer.GetAbsoluteParentRoom().GetRoomName()}");
-                   
+
             });
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("loadsettings", (string[] args) =>
@@ -424,7 +424,7 @@ namespace MagicSmoke
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("charmall", (string[] args) =>
             {
-                if (args.Count() == 0 || args[0]=="true")
+                if (args.Count() == 0 || args[0] == "true")
                 {
                     foreach (AIActor actor in StaticReferenceManager.AllEnemies)
                     {
@@ -434,7 +434,7 @@ namespace MagicSmoke
                         aiactor.CanTargetPlayers = false;
                     }
                 }
-                else if(args[0]=="false")
+                else if (args[0] == "false")
                 {
                     foreach (AIActor actor in StaticReferenceManager.AllEnemies)
                     {
@@ -454,7 +454,7 @@ namespace MagicSmoke
 
             ETGModConsole.Commands.GetGroup("ms").AddUnit("loadclipboard", (string[] args) =>
             {
-                if(args.Count() == 0)
+                if (args.Count() == 0)
                     LoadSettingsFromClipBoard();
                 else
                     LoadSettingsFromClipBoard(args[0]);
@@ -470,8 +470,8 @@ namespace MagicSmoke
                     glitchedchest.BecomeGlitchChest();
                     IntVector2 basePosition = new IntVector2((int)GameManager.Instance.PrimaryPlayer.transform.position.x, (int)GameManager.Instance.PrimaryPlayer.transform.position.y);
                     Chest.Spawn(glitchedchest, basePosition);
-                    if(args.Count()==2)
-                        if(args[1]=="true")
+                    if (args.Count() == 2)
+                        if (args[1] == "true")
                             ETGMod.Chest.OnPostOpen += glitchopen;
                 }
                 else
@@ -488,7 +488,7 @@ namespace MagicSmoke
             _SetGroup = _MsGroup.AddUnit("setmagnificence", _MagnificenceSet, _AutocompletionSettings);
         }
 
-        
+
 
         private void glitchopen(Chest c, PlayerController pc)
         {
@@ -522,7 +522,7 @@ namespace MagicSmoke
             wGameObject.rawGameObject = chest.gameObject;
             WeightedGameObjectCollection wGameObjectCollection = new WeightedGameObjectCollection();
             wGameObjectCollection.Add(wGameObject);
-            
+
             Chest spawnedChest = GameManager.Instance.RewardManager.SpawnTotallyRandomChest(r.GetBestRewardLocation(new IntVector2(2, 1), Dungeonator.RoomHandler.RewardLocationStyle.PlayerCenter, true));
             spawnedChest.ForceUnlock();
             spawnedChest.overrideMimicChance = 0f;
@@ -558,7 +558,7 @@ namespace MagicSmoke
             var test = Game.Items[id];
             var partner_gun = PickupObjectDatabase.GetByName(test.name) as Gun;
 
-            if(GameManager.Instance.PrimaryPlayer.inventory.AllGuns.Contains(partner_gun))
+            if (GameManager.Instance.PrimaryPlayer.inventory.AllGuns.Contains(partner_gun))
             {
                 //GameManager.Instance.PrimaryPlayer.ForceDropGun(i);
                 GameManager.Instance.PrimaryPlayer.ForceDropGun(partner_gun);
@@ -620,7 +620,7 @@ namespace MagicSmoke
                 activeObject[i.name] = i.PickupObjectId;
             }
 
-            var json = JsonConvert.SerializeObject(new { gunObject, statsObject, activeObject, passiveObject },Newtonsoft.Json.Formatting.Indented);
+            var json = JsonConvert.SerializeObject(new { gunObject, statsObject, activeObject, passiveObject }, Newtonsoft.Json.Formatting.Indented);
 
             //var json = JsonConvert.SerializeObject(new { characterObject, gunObject, statsObject, activeObject, passiveObject }, Newtonsoft.Json.Formatting.Indented);
             File.WriteAllText("MagicSmokeSaves/" + filename + ".json", Base64Encode(json));
@@ -677,7 +677,7 @@ namespace MagicSmoke
             if (System.IO.File.Exists("MagicSmokeSaves/" + filename + ".json"))
             {
                 var jsonFile = Base64Decode(File.ReadAllText("MagicSmokeSaves/" + filename + ".json"));
-                
+
                 var deserialized = JsonConvert.DeserializeObject<JObject>(jsonFile);
 
                 //foreach (JProperty character in deserialized["characterObject"])
@@ -686,7 +686,7 @@ namespace MagicSmoke
                 //    {
                 //        string[] characterName = new string[] { character.Value.ToString() };
                 //        LoadCharacter(characterName);
-                        
+
                 //    }
                 //}
 
@@ -707,7 +707,7 @@ namespace MagicSmoke
                         ETGModConsole.Log($"Gun not in list!");
                     }
                 }
-                
+
                 foreach (JProperty stat in deserialized["statsObject"])
                 {
                     if (_Stats.ContainsKey(stat.Name))
@@ -736,7 +736,7 @@ namespace MagicSmoke
                 foreach (JProperty passive in deserialized["passiveObject"])
                 {
                     int id = 0;
-                    
+
                     if (Int32.TryParse(passive.Value.ToString(), out id))
                     {
                         LootEngine.TryGivePrefabToPlayer(PickupObjectDatabase.GetById(id).gameObject, GameManager.Instance.PrimaryPlayer, false);
@@ -917,7 +917,7 @@ namespace MagicSmoke
                     }
                 }
             }
-            catch 
+            catch
             {
                 ETGModConsole.Log($"Catching silly switch exception!");
             }
