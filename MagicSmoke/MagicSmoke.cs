@@ -544,7 +544,7 @@ namespace MagicSmoke
                 ETGModConsole.Log($"Invalid item ID {id}!");
                 return;
             }
-
+             
             ETGModConsole.Log("Attempting to force wield " + args[0] + " (numeric " + id + ")" + ", class " + Game.Items.Get(id).GetType());
 
 
